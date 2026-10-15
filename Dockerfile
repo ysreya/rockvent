@@ -8,7 +8,7 @@ RUN npm install --omit=dev
 COPY server.js ./
 
 RUN mkdir -p ./public
-COPY index.html admin.html styles.css app.js admin.js ./public/
+COPY index.html about.html admin.html styles.css app.js admin.js ./public/
 
 RUN mkdir -p /app/data
 
