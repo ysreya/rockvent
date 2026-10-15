@@ -1,4 +1,4 @@
-# Construction Product Catalog — Railway Edition
+# RockVent — Construction Product Catalog (Railway)
 
 An independent, mobile-friendly B2B construction catalog with a simple product manager, image uploads, CSV import, and multi-product sales quote requests. No Lovable, Squarespace website subscription, or React build step required.
 
@@ -34,7 +34,7 @@ Visit `http://localhost:3000/` and `http://localhost:3000/admin.html`.
    - `ADMIN_PASSWORD` (a unique, long password)
    - `SESSION_SECRET` (a long random secret; use at least 32 random bytes)
    - `BUSINESS_NAME` (your company name)
-   - `SALES_EMAIL` (e.g. `sales@yourdomain.com`)
+   - `SALES_EMAIL=sales@rockventuae.com`
    - `DATA_DIR=/app/data`
    - `RESEND_API_KEY` and `MAIL_FROM` (for automated inquiry emails; see below)
 4. **Before uploading products**, add a **Railway Volume** mounted at `/app/data`. The Docker image does not preserve runtime writes across deployments. Volume storage is crucial to retain both product changes and uploaded photographs. Use **one service replica** with this file-based catalog.
@@ -49,7 +49,7 @@ Visit `http://localhost:3000/` and `http://localhost:3000/admin.html`.
 This version uses Resend's API and requires a verified sender domain. Sign up at https://resend.com, verify your sending domain, then set:
 
 ```env
-SALES_EMAIL=sales@yourdomain.com
+SALES_EMAIL=sales@rockventuae.com
 RESEND_API_KEY=re_...
 MAIL_FROM=Quotes <quotes@your-verified-domain.com>
 ```
@@ -81,3 +81,13 @@ The `MAIL_FROM` domain must be verified in Resend. This does **not** replace or 
 - **CSV imports:** optional `minOrder` and `unit` columns are supported. For multi-image galleries and PDFs, use the admin editor after import.
 - **Persistent storage:** Railway volume MUST be mounted at `/app/data`; images, documents, and catalog JSON all live there.
 - **Note:** Admin authentication is basic single-user authentication and sessions use in-memory storage. For a production site, consider persistent session storage, CSRF mitigation, admin access restrictions, automated backups, and malware scanning of PDF uploads. For uploaded assets, backups are essential because a Railway volume is not itself a backup.
+
+
+## RockVent branding / enquiries (V4)
+- Home: `/`; About Us: `/about.html`; Admin: `/admin.html`
+- Public emails: `info@rockventuae.com` and `sales@rockventuae.com`.
+- Quote submissions on the server are addressed to `sales@rockventuae.com`.
+- **To enable actual automatic email delivery**, configure `RESEND_API_KEY` and `MAIL_FROM` in Railway; verify your domain/sender in Resend and add its required DNS records without overwriting Google Workspace MX/SPF/DKIM. Without Resend the online send action gives an error, but the email-app fallback opens a pre-addressed message.
+- `BUSINESS_NAME=RockVent` and `SALES_EMAIL=sales@rockventuae.com` are suggested Railway variables.
+- About Us is neutral placeholder copy; replace with verified company facts.
+- Ensure `about.html` is in the repository root alongside index.html and the updated Dockerfile.

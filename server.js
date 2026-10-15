@@ -39,7 +39,7 @@ app.use('/uploads',express.static(IMAGE_DIR,{immutable:true,maxAge:'7d',index:fa
 app.use('/documents',express.static(DOC_DIR,{index:false,setHeaders:(res)=>res.setHeader('X-Content-Type-Options','nosniff')}));
 app.use(express.static('public'));
 app.get('/api/products',(req,res)=>res.json(read()));
-app.get('/api/config',(req,res)=>res.json({businessName:process.env.BUSINESS_NAME||'FORM & FOUND',salesEmail:process.env.SALES_EMAIL||'sales@yourbusiness.com',emailEnabled:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM&&process.env.SALES_EMAIL)}));
+app.get('/api/config',(req,res)=>res.json({businessName:process.env.BUSINESS_NAME||'RockVent',salesEmail:'sales@rockventuae.com',emailEnabled:!!(process.env.RESEND_API_KEY&&process.env.MAIL_FROM)}));
 const attempts=new Map();
 function limit(req,res,next){const ip=req.ip||'unknown';const now=Date.now();const a=attempts.get(ip)||[];const recent=a.filter(x=>x>now-15*60*1000);if(recent.length>=30)return res.status(429).json({error:'Too many attempts. Try again later.'});recent.push(now);attempts.set(ip,recent);next();}
 function auth(req,res,next){if(!req.session.admin)return res.status(401).json({error:'Please sign in to manage products.'});next();}
@@ -62,9 +62,9 @@ app.post('/api/quotes',limit,async(req,res)=>{
  const items=Array.isArray(req.body.items)?req.body.items.slice(0,40):[],catalog=read();
  const valid=items.map(x=>{const p=catalog.find(p=>p.id===x.id);return p?{id:p.id,name:p.name,quantity:Math.min(100000,Math.max(p.minOrder||1,Number.parseInt(x.quantity,10)||p.minOrder||1))}:null}).filter(Boolean);
  if(!valid.length)return res.status(400).json({error:'Please add at least one product.'});
- if(!process.env.RESEND_API_KEY||!process.env.MAIL_FROM||!process.env.SALES_EMAIL)return res.status(503).json({error:'Online inquiries are not enabled yet. Please use the email option instead.'});
+ if(!process.env.RESEND_API_KEY||!process.env.MAIL_FROM)return res.status(503).json({error:'Online inquiries are not enabled yet. Please use the email option instead.'});
  const lines=[`New product inquiry`, `Customer: ${name}`,`Company: ${company||'Not provided'}`,`Email: ${email}`, '', 'Requested products:',...valid.map(p=>`- ${p.name} [${p.id}] × ${p.quantity}`),'',`Note: ${note||'No note supplied'}`];
- try{const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.RESEND_API_KEY}`},body:JSON.stringify({from:process.env.MAIL_FROM,to:[process.env.SALES_EMAIL],reply_to:email,subject:`Quote request: ${valid.map(x=>x.id).join(', ').slice(0,120)}`,text:lines.join('\n')})});if(!response.ok){console.error('Email provider error:',response.status);return res.status(502).json({error:'Unable to send the inquiry right now. Please try the email option.'});}res.json({ok:true});}catch(e){console.error('Email transport failed:',e.message);res.status(502).json({error:'Unable to send the inquiry right now. Please try the email option.'});}
+ try{const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${process.env.RESEND_API_KEY}`},body:JSON.stringify({from:process.env.MAIL_FROM,to:['sales@rockventuae.com'],reply_to:email,subject:`Quote request: ${valid.map(x=>x.id).join(', ').slice(0,120)}`,text:lines.join('\n')})});if(!response.ok){console.error('Email provider error:',response.status);return res.status(502).json({error:'Unable to send the inquiry right now. Please try the email option.'});}res.json({ok:true});}catch(e){console.error('Email transport failed:',e.message);res.status(502).json({error:'Unable to send the inquiry right now. Please try the email option.'});}
 });
 app.get('/health',(req,res)=>res.send('ok'));
 app.listen(PORT,'0.0.0.0',()=>console.log('Catalog ready on port',PORT));
