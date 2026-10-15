@@ -17,16 +17,37 @@ fs.mkdirSync(DOC_DIR,{recursive:true});
 const FILE=path.join(DATA_DIR,'catalog.json');
 fs.mkdirSync(IMAGE_DIR,{recursive:true});
 const starter=[
- {id:'CLD-101',name:'Architectural Wall Cladding',category:'Cladding',description:'Contemporary facade systems with refined textures and resilient finishes.',image:'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1100&q=85',featured:true},
- {id:'STN-205',name:'Natural Stone Panels',category:'Stone',description:'Distinctive surfaces for facades, feature walls and commercial spaces.',image:'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1100&q=85'},
- {id:'MTL-310',name:'Structural Steel Sections',category:'Steel',description:'Reliable structural profiles for demanding construction projects.',image:'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1100&q=85'},
- {id:'PAV-112',name:'Outdoor Paving Systems',category:'Paving',description:'Versatile, durable paving formats for exterior environments.',image:'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1100&q=85'},
- {id:'INT-208',name:'Interior Surface Panels',category:'Interiors',description:'Considered architectural finishes for contemporary interiors.',image:'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1100&q=85'},
- {id:'CON-402',name:'Precast Concrete Elements',category:'Concrete',description:'Consistent construction components for repeatable project delivery.',image:'https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=1100&q=85'}
+ {id:'CLD-101',name:'Architectural Wall Cladding',category:'Cladding',description:'Contemporary facade systems with refined textures and resilient finishes.',image:'https://images.unsplash.com/photo-1777793918984-e40e628d7cf5?w=1100&q=85',featured:true},
+ {id:'STN-205',name:'Natural Stone Panels',category:'Stone',description:'Distinctive surfaces for facades, feature walls and commercial spaces.',image:'https://images.unsplash.com/photo-1774290331891-5d759056c68d?w=1100&q=85'},
+ {id:'MTL-310',name:'Structural Steel Sections',category:'Steel',description:'Reliable structural profiles for demanding construction projects.',image:'https://images.unsplash.com/photo-1558358235-a0a93f68a52c?w=1100&q=85'},
+ {id:'PAV-112',name:'Outdoor Paving Systems',category:'Paving',description:'Versatile, durable paving formats for exterior environments.',image:'https://images.unsplash.com/photo-1760537760008-5fd5b1f872d4?w=1100&q=85'},
+ {id:'INT-208',name:'Interior Surface Panels',category:'Interiors',description:'Considered architectural finishes for contemporary interiors.',image:'https://images.unsplash.com/photo-1770816306659-adcf99a11aeb?w=1100&q=85'},
+ {id:'CON-402',name:'Precast Concrete Elements',category:'Concrete',description:'Consistent construction components for repeatable project delivery.',image:'https://images.unsplash.com/photo-1695445301510-459fb368d8af?w=1100&q=85'}
 ];
+const placeholderImages=new Set([
+ 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1100&q=85',
+ 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1100&q=85',
+ 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=1100&q=85',
+ 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1100&q=85',
+ 'https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?w=1100&q=85',
+ 'https://images.unsplash.com/photo-1600585152915-d208bec867a1?w=1100&q=85'
+]);
 if(!fs.existsSync(FILE))fs.writeFileSync(FILE,JSON.stringify(starter,null,2));
 function read(){return JSON.parse(fs.readFileSync(FILE,'utf8'));}
 function write(data){const tmp=FILE+'.tmp';fs.writeFileSync(tmp,JSON.stringify(data,null,2));fs.renameSync(tmp,FILE);}
+const hvacById=Object.fromEntries(starter.map(p=>[p.id,p.image]));
+{
+ const data=read();
+ let changed=false;
+ for(const p of data){
+  const next=hvacById[p.id];
+  if(!next||!placeholderImages.has(p.image))continue;
+  p.image=next;
+  if(Array.isArray(p.images))p.images=p.images.map(url=>placeholderImages.has(url)?next:url);
+  changed=true;
+ }
+ if(changed)write(data);
+}
 function safe(v,max=500){return String(v??'').trim().slice(0,max);}
 const adminUser=process.env.ADMIN_USER||'admin';
 const adminPassword=process.env.ADMIN_PASSWORD;
